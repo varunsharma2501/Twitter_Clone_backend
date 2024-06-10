@@ -37,6 +37,13 @@ const userSchema=new mongoose.Schema({
             default: [],  // Initializes as an empty array, not an array within an array
         }
     ],
+    bookmarks:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:'Tweet',
+            default:[],
+        }
+    ],
 },{timestamps:true})
 
 const User=mongoose.model('User',userSchema);

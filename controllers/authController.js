@@ -48,6 +48,10 @@ const signup = async (req, res) => {
 
 const login = async (req, res) => {
 	try {
+		// if (req.user) {
+		// 	return res.status(400).json({ error: "You are already logged in. Please log out first." });
+		// }
+
 		const { username, password } = req.body;
 		const user = await User.findOne({ username });
 		const isPasswordCorrect = await bcrypt.compare(password, user?.password || "");

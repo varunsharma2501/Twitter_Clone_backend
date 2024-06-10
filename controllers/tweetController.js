@@ -57,4 +57,120 @@ const deleteTweet=async(req,res)=>{
     }
 }
 
-export {createTweet,deleteTweet}
+const likeDislike = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const tweetId = req.params.id;
+        const tweet = await Tweet.findById(tweetId);
+
+        if (!tweet) {
+            return res.status(404).json({ error: "Tweet not found" });
+        }
+
+        const index = tweet.likes.indexOf(userId);
+        let message = "";
+
+        if (index !== -1) {
+            // If the user has already liked the tweet, remove their ID from the likes array
+            await Tweet.findByIdAndUpdate(tweetId, { $pull: { likes: userId } });
+            message = "Removed from likes";
+        } else {
+            // If the user has not liked the tweet, add their ID to the likes array
+            await Tweet.findByIdAndUpdate(tweetId, { $push: { likes: userId } });
+            message = "Liked";
+        }
+
+        res.status(200).json({ message, success: true });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+const editTweet = async (req, res) => {
+    try {
+        const userId=req.user._id;
+        const { id } = req.params;
+        const { description } = req.body;
+
+        // Find the tweet by its ID
+        const tweet = await Tweet.findById(id);
+        
+        // Check if the tweet exists
+        if (!tweet) {
+            return res.status(404).json({ error: "Tweet not found" });
+        }
+
+        if (!tweet.author.equals(userId)) {
+            return res.status(403).json({ error: "You are not authorized to edit this tweet" });
+        }
+        // Update the description of the tweet
+        tweet.description = description;
+        await tweet.save();
+
+        res.status(200).json({ message: "Tweet updated successfully", success: true });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+const getAllTweets=async(req,res)=>{
+    try {
+        const userId = req.user._id;
+
+        // Find the user by ID
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        // Get the tweets authored by other users
+        const tweets = await Tweet.find({ author: { $ne: userId } });
+
+        res.status(200).json({ tweets });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+const getUserTweets = async (req, res) => {
+    try {
+        // Get the ID of the logged-in user
+        const userId = req.user._id;
+
+        // Find the tweets authored by the logged-in user
+        const tweets = await Tweet.find({ author: userId });
+
+        res.status(200).json({ tweets });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+const getFollowingTweets = async (req, res) => {
+    try {
+        const userId = req.user._id; // Get the ID of the logged-in user
+
+        // Find the logged-in user to get the list of users they are following
+        const user = await User.findById(userId).populate("following", "_id");
+
+        // Extract the IDs of users the logged-in user is following
+        const followingIds = user.following.map(user => user._id);
+
+        // Find all tweets where the author ID is in the list of following IDs
+        const tweets = await Tweet.find({ author: { $in: followingIds } });
+
+        res.status(200).json({ tweets });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+
+export {createTweet,deleteTweet,likeDislike,editTweet,getAllTweets,getUserTweets,getFollowingTweets}
