@@ -5,6 +5,7 @@ import connectToMongo from "./db/db.js";
 import authRoute from './routes/authRoute.js'
 import tweetRoute from './routes/tweetRoute.js'
 import userRoute from './routes/userRoute.js'
+import cors from 'cors'
 
 dotenv.config({
     path:".env"
@@ -18,6 +19,11 @@ app.use(express.urlencoded({
 }));
 app.use(express.json());
 app.use(cookieParser());
+ const corsOptions={
+    origin:"http://localhost:3000",
+    credentials:true,
+ }
+ app.use(cors(corsOptions));
 
 // apis
 app.use("/api/user",userRoute);
