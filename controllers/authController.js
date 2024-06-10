@@ -11,22 +11,23 @@ const signup = async (req, res) => {
 		}
 
 		const user = await User.findOne({ username });
-
+		console.log("inside the signup")
 		if (user) {
 			return res.status(400).json({ error: "Username already exists" });
-		}
-
-		// HASH PASSWORD HERE
-		const salt = await bcrypt.genSalt(10);
-		const hashedPassword = await bcrypt.hash(password, salt);
-
-		const newUser = new User({
-			fullname,
-			username,
-			password: hashedPassword,
-			email
-		});
-
+			}
+			
+			// HASH PASSWORD HERE
+			const salt = await bcrypt.genSalt(10);
+			const hashedPassword = await bcrypt.hash(password, salt);
+			
+			const newUser = new User({
+				fullname,
+				username,
+				password: hashedPassword,
+				email
+				});
+				
+		console.log("inside the signup2")
 		if (newUser) {
 			// Generate JWT token here
 			generateTokenAndSetCookie(newUser._id, res);
@@ -52,21 +53,25 @@ const login = async (req, res) => {
 		// 	return res.status(400).json({ error: "You are already logged in. Please log out first." });
 		// }
 
+		console.log("in login 1");
 		const { username, password } = req.body;
+		console.log(username +" "+ password);
 		const user = await User.findOne({ username });
+		console.log(user);
 		const isPasswordCorrect = await bcrypt.compare(password, user?.password || "");
 
 		if (!user || !isPasswordCorrect) {
 			return res.status(400).json({ error: "Invalid username or password" });
 		}
-
+		console.log("in login 2");
 		generateTokenAndSetCookie(user._id, res);
-
+		console.log("in login 3");
 		res.status(200).json({
-			"_id": user._id,
-			"fullname": user.fullname,
-			"username": user.username,
+			_id: user._id,
+			fullname: user.fullname,
+			username: user.username,
 		});
+		console.log("after res");
 	} catch (error) {
 		console.log("Error in login controller", error.message);
 		res.status(500).json({ error: "Internal Server Error" });
