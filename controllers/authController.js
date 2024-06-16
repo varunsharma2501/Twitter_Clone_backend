@@ -29,16 +29,17 @@ const signup = async (req, res) => {
 				
 		console.log("inside the signup2")
 		if (newUser) {
+			await newUser.save();
 			// Generate JWT token here
 			generateTokenAndSetCookie(newUser._id, res);
-			await newUser.save();
 
 			res.status(201).json({
 				_id: newUser._id,
 				fullname: newUser.fullname,
 				username: newUser.username,
-				user
+				user:newUser,
 			});
+			console.log("created user in backedn ssignup");
 		} else {
 			res.status(400).json({ error: "Invalid user data" });
 		}
@@ -50,7 +51,7 @@ const signup = async (req, res) => {
 
 const login = async (req, res) => {
 	try {
-		// if (req.user) {
+		// if (req?.user) {
 		// 	return res.status(400).json({ error: "You are already logged in. Please log out first." });
 		// }
 
@@ -71,7 +72,7 @@ const login = async (req, res) => {
 			_id: user._id,
 			fullname: user.fullname,
 			username: user.username,
-			user
+			user:user
 		});
 		console.log("after res");
 	} catch (error) {
@@ -81,9 +82,13 @@ const login = async (req, res) => {
 };
 
 const logout = (req, res) => {
+	console.log("inside the logout");
+	console.log(req.body);
 	try {
-		res.cookie("jwt", "", { maxAge: 0 });
+		console.log(req.cookies.twitter_token);
+		res.clearCookie("twitter_token");
 		res.status(200).json({ message: "Logged out successfully" });
+		console.log("done with logout");
 	} catch (error) {
 		console.log("Error in logout controller", error.message);
 		res.status(500).json({ error: "Internal Server Error" });

@@ -1,4 +1,3 @@
-import Tweet from "../models/tweetModel.js";
 import User from "../models/userModel.js";
 
 const bookmark = async (req, res) => {
@@ -36,7 +35,9 @@ const bookmark = async (req, res) => {
 const getProfile=async(req,res)=>{
     try {
         const id=req.params.id;
+        console.log("param ",id);
         const user=await User.findById(id).select("-password");
+        console.log(user);
         return res.status(200).json({user});
     } catch (error) {
         console.log(error);
@@ -46,9 +47,10 @@ const getProfile=async(req,res)=>{
 
 const getUsers = async (req, res) => {
     try {
+        console.log("Inside getUsers1");
         // Get the ID of the logged-in user
         const userId = req.user._id;
-
+        console.log("userID",userID);
         // Find the logged-in user
         const user = await User.findById(userId);
 
@@ -60,11 +62,11 @@ const getUsers = async (req, res) => {
         const followingIds = user.following.map(follow => follow._id);
 
         // Find all users except the logged-in user and the users the logged-in user is following
-        const users = await User.find({
+        const otherUsers = await User.find({
             _id: { $nin: [userId, ...followingIds] } // Exclude the logged-in user and users the logged-in user is following
         });
-
-        res.status(200).json({ users });
+        console.log("otherusers are :",otherUsers);
+        res.status(200).json({ otherUsers });
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: "Internal server error" });
