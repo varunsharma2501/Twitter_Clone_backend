@@ -5,5 +5,5 @@ import {signup,login,logout} from '../controllers/authController.js';
 
 router.post("/signup",signup);
 router.post("/login",login);
-router.post("/logout",logout);
+router.put("/logout",logout);
 export default router;

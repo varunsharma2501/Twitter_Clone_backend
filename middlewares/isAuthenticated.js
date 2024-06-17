@@ -4,14 +4,14 @@ import User from "../models/userModel.js";
 const protectRoute = async (req, res, next) => {
     try {
         const token = req.cookies.twitter_token;
-        console.log("token value is ",token );
+        // console.log("token value is ",token );
         if (!token) {
             console.log("No token provided22 ");
             return res.status(401).json({ error: "Unauthorized - No Token Provided" });
         }
 
         // Log the token and the secret for debugging
-        console.log("Token: ", token);
+        // console.log("Token: ", token);
         // console.log("JWT_SECRET: ", process.env.JWT_SECRET);
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);

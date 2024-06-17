@@ -11,7 +11,7 @@ const signup = async (req, res) => {
 		}
 
 		const user = await User.findOne({ username });
-		console.log("inside the signup")
+		// console.log("inside the signup")
 		if (user) {
 			return res.status(400).json({ error: "Username already exists" });
 			}
@@ -27,7 +27,7 @@ const signup = async (req, res) => {
 				email
 				});
 				
-		console.log("inside the signup2")
+		// console.log("inside the signup2")
 		if (newUser) {
 			await newUser.save();
 			// Generate JWT token here
@@ -39,12 +39,12 @@ const signup = async (req, res) => {
 				username: newUser.username,
 				user:newUser,
 			});
-			console.log("created user in backedn ssignup");
+			// console.log("created user in backedn ssignup");
 		} else {
 			res.status(400).json({ error: "Invalid user data" });
 		}
 	} catch (error) {
-		console.log("Error in signup controller", error.message);
+		// console.log("Error in signup controller", error.message);
 		res.status(500).json({ error: "Internal Server Error" });
 	}
 };
@@ -55,42 +55,42 @@ const login = async (req, res) => {
 		// 	return res.status(400).json({ error: "You are already logged in. Please log out first." });
 		// }
 
-		console.log("in login 1");
+		// console.log("in login 1");
 		const { username, password } = req.body;
-		console.log(username +" "+ password);
+		// console.log(username +" "+ password);
 		const user = await User.findOne({ username });
-		console.log(user);
+		// console.log(user);
 		const isPasswordCorrect = await bcrypt.compare(password, user?.password || "");
 
 		if (!user || !isPasswordCorrect) {
 			return res.status(400).json({ error: "Invalid username or password" });
 		}
-		console.log("in login 2");
+		// console.log("in login 2");
 		generateTokenAndSetCookie(user._id, res);
-		console.log("in login 3");
+		// console.log("in login 3");
 		res.status(200).json({
 			_id: user._id,
 			fullname: user.fullname,
 			username: user.username,
 			user:user
 		});
-		console.log("after res");
+		// console.log("after res");
 	} catch (error) {
-		console.log("Error in login controller", error.message);
+		// console.log("Error in login controller", error.message);
 		res.status(500).json({ error: "Internal Server Error" });
 	}
 };
 
 const logout = (req, res) => {
-	console.log("inside the logout");
-	console.log(req.body);
+	// console.log("inside the logout");
+	// console.log(req.body);
 	try {
-		console.log(req.cookies.twitter_token);
+		// console.log(req.cookies.twitter_token);
 		res.clearCookie("twitter_token");
 		res.status(200).json({ message: "Logged out successfully" });
-		console.log("done with logout");
+		// console.log("done with logout");
 	} catch (error) {
-		console.log("Error in logout controller", error.message);
+		// console.log("Error in logout controller", error.message);
 		res.status(500).json({ error: "Internal Server Error" });
 	}
 };

@@ -128,7 +128,8 @@ const getAllTweets=async(req,res)=>{
             return res.status(404).json({ error: "User not found" });
         }
         // Get the tweets authored by other users
-        const tweets = await Tweet.find({ author: { $ne: userId } });
+        const tweets = await Tweet.find({ author: { $ne: userId } })
+        . populate('author', 'fullname username');
 
         res.status(200).json({ tweets });
     } catch (error) {
@@ -143,7 +144,8 @@ const getUserTweets = async (req, res) => {
         const userId = req.user._id;
 
         // Find the tweets authored by the logged-in user
-        const tweets = await Tweet.find({ author: userId });
+        const tweets = await Tweet.find({ author: userId })
+        . populate('author', 'fullname username');
 
         res.status(200).json({ tweets });
     } catch (error) {
@@ -157,13 +159,14 @@ const getFollowingTweets = async (req, res) => {
         const userId = req.user._id; // Get the ID of the logged-in user
 
         // Find the logged-in user to get the list of users they are following
-        const user = await User.findById(userId).populate("following", "_id");
+        const user = await User.findById(userId).populate("following", "_id")
 
         // Extract the IDs of users the logged-in user is following
         const followingIds = user.following.map(user => user._id);
 
         // Find all tweets where the author ID is in the list of following IDs
-        const tweets = await Tweet.find({ author: { $in: followingIds } });
+        const tweets = await Tweet.find({ author: { $in: followingIds } })
+        . populate('author', 'fullname username');
 
         res.status(200).json({ tweets });
     } catch (error) {

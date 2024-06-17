@@ -47,10 +47,10 @@ const getProfile=async(req,res)=>{
 
 const getUsers = async (req, res) => {
     try {
-        console.log("Inside getUsers1");
+        // console.log("Inside getUsers1");
         // Get the ID of the logged-in user
         const userId = req.user._id;
-        console.log("userID",userID);
+        // console.log("userID",userId);
         // Find the logged-in user
         const user = await User.findById(userId);
 
@@ -65,10 +65,10 @@ const getUsers = async (req, res) => {
         const otherUsers = await User.find({
             _id: { $nin: [userId, ...followingIds] } // Exclude the logged-in user and users the logged-in user is following
         });
-        console.log("otherusers are :",otherUsers);
+        // console.log("otherusers are :",otherUsers);
         res.status(200).json({ otherUsers });
     } catch (error) {
-        console.log(error);
+        // console.log(error);
         res.status(500).json({ error: "Internal server error" });
     }
 };
@@ -136,29 +136,43 @@ const addFollower = async (req, res) => {
         const user = await User.findById(userId);
         const otherUser = await User.findById(otherUserId);
 
-        if(userId.toString()===otherUserId){
-            return res.status(404).send("You cant Follow yourself");
+        if (userId.toString() === otherUserId) {
+            return res.status(404).send("You can't follow yourself");
         }
+
         if (!user || !otherUser) {
             return res.status(404).send("Either user is incorrect");
         }
-        if (user.following.includes(otherUserId)) {
-            return res.status(400).json({ error: "User is already being followed" });
+
+        // Check if the user is already following the other user
+        const isFollowing = user.following.includes(otherUserId);
+
+        if (isFollowing) {
+            // console.log("userId",userId);
+            // console.log("otherUserId",otherUserId);
+            // If already following, remove otherUserId from following array of the logged-in user
+            await User.findByIdAndUpdate(userId, { $pull: { following: otherUserId } });
+
+            // Remove userId from the followers array of the other user
+            await User.findByIdAndUpdate(otherUserId, { $pull: { followers: userId } });
+
+            return res.status(200).json({ success: true, message: "Unfollowed successfully" });
+        } else {
+            // If not following, proceed to follow
+            user.following.push(otherUserId);
+            await user.save();
+
+            otherUser.followers.push(userId);
+            await otherUser.save();
+
+            return res.status(200).json({ success: true, message: "Followed successfully" });
         }
-        // Push otherUserId to the following array of the logged-in user
-        user.following.push(otherUserId);
-        await user.save();
-
-        // Push userId to the followers array of the other user
-        otherUser.followers.push(userId);
-        await otherUser.save();
-
-        res.status(200).json({ success: true, message: "Followed successfully" });
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: "Internal server error" });
     }
 };
+
 
 const removeFollower = async (req, res) => {
     try {
