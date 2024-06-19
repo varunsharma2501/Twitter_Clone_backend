@@ -5,7 +5,7 @@ import protectRoute from '../middlewares/isAuthenticated.js'
 
 
 router.post("/create",protectRoute,createTweet);
-router.post("/delete/:id",protectRoute,deleteTweet);
+router.put("/delete/:id",protectRoute,deleteTweet);
 router.put("/like/:id",protectRoute,likeDislike);
 router.post("/comment/:id",protectRoute,addComment);
 router.put("/bookmark/:id",protectRoute,bookUnbookmark);
