@@ -157,6 +157,7 @@ const addComment = async (req, res) => {
 
 const editTweet = async (req, res) => {
     try {
+        console.log("edit Backend");
         const userId=req.user._id;
         const { id } = req.params;
         const { description } = req.body;
