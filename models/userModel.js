@@ -44,6 +44,13 @@ const userSchema=new mongoose.Schema({
             default:[],
         }
     ],
+    likes:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:'Tweet',
+            default:[],
+        }
+    ],
     bio:{
         type:String,
         default: '',

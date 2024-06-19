@@ -10,7 +10,7 @@ const createTweet=async(req,res)=>{
         // check user exists
         const user=await User.findById(userId);
         if(!user){
-            return res.status(404).json({error:"User not found"});
+            return res.status(404).json({error:"User not found111"});
         }
         // console.log(user);
         const newTweet=new Tweet({
@@ -57,6 +57,7 @@ const deleteTweet=async(req,res)=>{
     }
 }
 
+
 const likeDislike = async (req, res) => {
     try {
         const userId = req.user._id;
@@ -73,14 +74,80 @@ const likeDislike = async (req, res) => {
         if (index !== -1) {
             // If the user has already liked the tweet, remove their ID from the likes array
             await Tweet.findByIdAndUpdate(tweetId, { $pull: { likes: userId } });
+            await User.findByIdAndUpdate(userId, { $pull: { likes: tweetId } }); // Corrected this line
             message = "Removed from likes";
         } else {
             // If the user has not liked the tweet, add their ID to the likes array
             await Tweet.findByIdAndUpdate(tweetId, { $push: { likes: userId } });
+            await User.findByIdAndUpdate(userId, { $push: { likes: tweetId } }); // Corrected this line
             message = "Liked";
         }
 
         res.status(200).json({ message, success: true });
+
+    } catch (error) {
+        console.error(error); // Better to log the actual error
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+const bookUnbookmark = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const tweetId = req.params.id;
+        const tweet = await Tweet.findById(tweetId);
+        // console.log("book" ,userId,tweetId);
+        if (!tweet) {
+            return res.status(404).json({ error: "Tweet not found" });
+        }
+
+        const index = tweet.bookmarks.indexOf(userId);
+        let message = "";
+
+        if (index !== -1) {
+            // If the user has already liked the tweet, remove their ID from the likes array
+            await Tweet.findByIdAndUpdate(tweetId, { $pull: { bookmarks: userId } });
+            await User.findByIdAndUpdate(userId,{$pull:{bookmarks:tweetId}});
+
+            message = "Removed from bookmarks";
+            
+        } else {
+            // If the user has not liked the tweet, add their ID to the likes array
+            await Tweet.findByIdAndUpdate(tweetId, { $push: { bookmarks: userId } });
+            await User.findByIdAndUpdate(userId,{$push:{bookmarks:tweetId}});
+            message = "Bookmarked";
+        }
+
+        res.status(200).json({ message, success: true });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+const addComment = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const tweetId = req.params.id;
+        const tweet = await Tweet.findById(tweetId);
+
+        if (!tweet) {
+            return res.status(404).json({ error: "Tweet not found" });
+        }
+
+        const comment = req.body.comment;
+
+        // Add the comment
+        await Tweet.findByIdAndUpdate(
+            tweetId, 
+            { $push: { comments: { user: userId, message: comment } } },
+            { new: true }
+        );
+
+        // Populate the comments with user details
+        const updatedTweet = await Tweet.findById(tweetId);
+
+        res.status(200).json({ message: "Comment Added", success: true, tweet: updatedTweet });
 
     } catch (error) {
         console.log(error);
@@ -128,7 +195,7 @@ const getAllTweets=async(req,res)=>{
             return res.status(404).json({ error: "User not found" });
         }
         // Get the tweets authored by other users
-        const tweets = await Tweet.find({ author: { $ne: userId } })
+        const tweets = await Tweet.find()
         . populate('author', 'fullname username');
 
         res.status(200).json({ tweets });
@@ -176,4 +243,4 @@ const getFollowingTweets = async (req, res) => {
 };
 
 
-export {createTweet,deleteTweet,likeDislike,editTweet,getAllTweets,getUserTweets,getFollowingTweets}
+export {createTweet,deleteTweet,likeDislike,editTweet,getAllTweets,getUserTweets,getFollowingTweets,bookUnbookmark,addComment}

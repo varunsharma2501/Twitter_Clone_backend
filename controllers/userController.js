@@ -5,7 +5,7 @@ const bookmark = async (req, res) => {
         const userId = req.user._id;
         const tweetId = req.params.id;
         const user = await User.findById(userId);
-        console.log(userId+"  "+tweetId);
+        // console.log(userId+"  "+tweetId);
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
@@ -27,7 +27,7 @@ const bookmark = async (req, res) => {
         res.status(200).json({ message, success: true });
 
     } catch (error) {
-        console.log(error);
+        // console.log(error);
         res.status(500).json({ error: "Internal server error" });
     }
 };
@@ -35,12 +35,12 @@ const bookmark = async (req, res) => {
 const getProfile=async(req,res)=>{
     try {
         const id=req.params.id;
-        console.log("param ",id);
+        // console.log("param ",id);
         const user=await User.findById(id).select("-password");
-        console.log(user);
+        // console.log(user);
         return res.status(200).json({user});
     } catch (error) {
-        console.log(error);
+        // console.log(error);
         res.status(500).json({ error: "Internal server error" });
     }
 }
@@ -97,6 +97,38 @@ const getFollowers = async (req, res) => {
         res.status(200).json({ followers });
     } catch (error) {
         console.log(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+const getLikes = async (req, res) => {
+    try {
+        const userId = req.user._id; // Assuming userId is passed in the route params
+        const user = await User.findById(userId).populate('likes');
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        res.status(200).json({ likes: user.likes });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+};
+
+const getBookmarks = async (req, res) => {
+    try {
+        const userId = req.user._id; // Assuming userId is passed in the route params
+        const user = await User.findById(userId).populate('bookmarks');
+
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+
+        res.status(200).json({ bookmarks: user.bookmarks });
+    } catch (error) {
+        // console.error(error);
         res.status(500).json({ error: "Internal server error" });
     }
 };
@@ -210,4 +242,4 @@ const removeFollower = async (req, res) => {
     }
 };
 
-export {bookmark,getProfile,getUsers,getFollowers,getFollowing,addFollower,removeFollower}; 
+export {bookmark,getProfile,getUsers,getFollowers,getFollowing,addFollower,removeFollower,getLikes,getBookmarks}; 
